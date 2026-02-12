@@ -136,4 +136,3 @@ Port déjà utilisé :
 ---
 
 **Auteur :** Nabila ARAB
-**Date :** 2026-02-12
