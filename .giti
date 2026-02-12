@@ -1,0 +1,9 @@
+# Données locales (ne pas publier)
+data/users.json
+data/attempts.json
+data/security.log
+
+# OS / éditeurs
+.DS_Store
+Thumbs.db
+.vscode/

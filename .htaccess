@@ -1,0 +1,6 @@
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-Frame-Options "DENY"
+  Header set Referrer-Policy "no-referrer"
+  Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+</IfModule>
