@@ -1,138 +1,200 @@
-# Secure Auth PHP (XAMPP) — Formulaire d’authentification sécurisé
+# Formulaire d’authentification sécurisé (PHP + XAMPP)
 
-Mini application PHP d’authentification réalisée pour un TP sécurité.
-Interface simple (logo + formulaire) et mesures de sécurité essentielles (hash, CSRF, anti brute-force, sessions, protection des fichiers sensibles).
-
----
-
-## Sommaire
-- [1. Fonctionnalités](#1-fonctionnalités)
-- [2. Prérequis](#2-prérequis)
-- [3. Installation (Windows + XAMPP)](#3-installation-windows--xampp)
-- [4. Lancer et utiliser l’application](#4-lancer-et-utiliser-lapplication)
-- [5. Structure du projet](#5-structure-du-projet)
-- [6. Sécurité (mesures mises en place)](#6-sécurité-mesures-mises-en-place)
-- [7. Tests de démonstration (pour le prof)](#7-tests-de-démonstration-pour-le-prof)
-- [8. Dépannage](#8-dépannage)
-
----
-
-## 1. Fonctionnalités
-### Authentification
-- Connexion via **identifiant + mot de passe**
-- Message :
-  - ✅ succès : **« Vous êtes connecté »**
-  - ❌ erreur : **« Erreur. Recommence. »**
-
-### Ajout de compte
-- Page dédiée : `add_account.php`
-- Règles :
-  - Identifiant : **3–30** caractères (a-zA-Z0-9 . _ -)
-  - Mot de passe : **8–64** + majuscule/minuscule/chiffre/symbole
-
-### UI
-- Logo : `assets/img/logo.png`
-- Design “cyber” + animations légères (CSS)
+## 1) Objectif (selon l’énoncé)
+Réaliser un formulaire d’identification sécurisé comprenant :
+- 1 **logo**
+- 1 champ **Identifiant**
+- 1 champ **Mot de passe**
+- **3 boutons** :
+  - **Reset** : remise à zéro des champs
+  - **Valider (OK)** : affiche un message de succès ou d’erreur
+  - **Ajout compte** : permet d’ajouter un identifiant supplémentaire
+- Aucune contrainte de langage/framework/BD
+- Le projet doit être publié sur une plateforme (GitHub / GitLab / Framagit)
+- Le fichier `README.md` doit expliquer :
+  - les informations techniques
+  - comment utiliser
+  - identifiant/mot de passe si nécessaire
 
 ---
 
-## 2. Prérequis
-- Windows
-- XAMPP (Apache + PHP) : https://www.apachefriends.org/fr/index.html
+## 2) Choix techniques
+Ce projet est réalisé en **PHP** (solution simple et rapide avec XAMPP) et respecte des principes de sécurité de base :
+
+- **PHP + Apache** via XAMPP
+- Interface : HTML/CSS
+- Stockage des comptes : **fichier JSON** (`data/users.json`)  
+  (persistance simple sans base SQL/NoSQL)
+- Sécurité :
+  - mots de passe **hachés** (`password_hash`) + vérification (`password_verify`)
+  - protection **CSRF** (token en session)
+  - **rate limiting** basique (anti brute-force) via `data/attempts.json`
+  - session PHP + cookies durcis (HttpOnly, SameSite)
 
 ---
 
-## 3. Installation (Windows + XAMPP)
-1. Copier/cloner le projet dans :
-   - `C:\xampp\htdocs\secure-auth-php\`
-2. Démarrer **Apache** dans XAMPP Control Panel
-3. Ouvrir dans un navigateur :
-   - http://localhost/secure-auth-php/index.php
+## 3) Prérequis (outils à installer)
+### 3.1 XAMPP (Apache + PHP)
+Télécharger : https://www.apachefriends.org/fr/index.html
+
+Après installation, XAMPP est généralement dans :
+- `C:\xampp\`
+
+### 3.2 (Recommandé) Éditeur de code
+Visual Studio Code : https://code.visualstudio.com/
+
+### 3.3 Git pour publier sur GitHub
+Git : https://git-scm.com/downloads  
+GitHub Desktop : https://desktop.github.com/
 
 ---
 
-## 4. Lancer et utiliser l’application
-### 4.1 Connexion
-- Ouvrir : `index.php`
-- Renseigner identifiant + mot de passe
-- Cliquer **Valider**
+## 4) Installation / Création du projet (pas à pas)
+### 4.1 Démarrer Apache
+1. Ouvrir **XAMPP Control Panel**
+2. Cliquer sur **Start** pour **Apache**
+3. Vérifier dans un navigateur :
+   - http://localhost/
 
-### 4.2 Ajout compte
-- Cliquer **Ajout compte**
-- Créer un nouvel utilisateur
+Si Apache ne démarre pas, le problème le plus fréquent est un port déjà utilisé (80/443).  
+Dans ce cas, changer le port dans la configuration Apache (ex. 8080) puis redémarrer.
 
-### 4.3 Déconnexion
-- Cliquer **Se déconnecter**
+### 4.2 Créer le dossier du projet
+Créer le dossier dans `htdocs` (racine web d’Apache) :
 
----
+- `C:\xampp\htdocs\secure-auth-php\`
 
-## 5. Structure du projet
-```
+### 4.3 Arborescence du projet
+Le projet contient :
+
+```text
 secure-auth-php/
-  index.php
-  add_account.php
-  logout.php
-  .htaccess
-  assets/
-    style.css
-    app.js
-    img/
-      logo.png
+  index.php            # Login (formulaire + traitement)
+  add_account.php      # Ajout compte (formulaire + traitement)
+  logout.php           # Déconnexion
   lib/
-    security.php
-    storage.php
+    security.php       # Session, CSRF, rate limit
+    storage.php        # Lecture/écriture JSON
   data/
-    .htaccess
-    users.json           (local)
-    attempts.json        (local)
+    users.json         # Comptes (hash)
+    attempts.json      # Tentatives (anti brute-force)
+  assets/
+    style.css          # Style
+  README.md
 ```
 
-> Le dossier `data/` contient des fichiers locaux (créés/écrits par PHP).  
-> Il est bloqué en accès web direct via `data/.htaccess`.
+---
+
+## 5) Lancer le projet
+### 5.1 URL du projet
+Si Apache écoute sur le port 80 (par défaut) :
+- http://localhost/secure-auth-php/index.php
+
+Si Apache a été déplacé en 8080 :
+- http://localhost:8080/secure-auth-php/index.php
 
 ---
 
-## 6. Sécurité (mesures mises en place)
+## 6) Identifiants de test
+Pour tester la connexion :
 
-| Menace | Mesure | Où |
-|---|---|---|
-| Vol de mots de passe en clair | Hash `password_hash` / `password_verify` | `index.php`, `add_account.php` |
-| CSRF (requêtes forcées) | Token CSRF en session + vérification | `lib/security.php` |
-| Brute-force | Limite 10 tentatives / 5 min / IP | `lib/security.php` + `data/attempts.json` |
-| Session fixation | `session_regenerate_id(true)` après login | `index.php` |
-| Exposition des fichiers sensibles | `data/.htaccess` → `Require all denied` | `data/.htaccess` |
-| Clickjacking / sniffing / referrer | Headers HTTP de sécurité | `.htaccess` racine |
-
-### 6.1 Protection du dossier `data/`
-Test :
-- http://localhost/secure-auth-php/data/users.json  
-Résultat attendu : **403 Forbidden**
+- **Identifiant :** `Nabila`  
+- **Mot de passe :** `Nabila2026!`
 
 ---
 
-## 7. Tests de démonstration
-1. **Protection data/** : ouvrir `.../data/users.json` → **403**
-2. **Mauvais login** : message **Erreur. Recommence.**
-3. **Bon login** : message **Vous êtes connecté**
-4. **Ajout compte** : créer un nouvel utilisateur puis se connecter
-5. **Brute-force** : > 10 tentatives → blocage temporaire (HTTP 429)
+## 7) Utilisation (fonctionnel)
+### 7.1 Connexion
+Sur la page `index.php` :
+- saisir identifiant + mot de passe
+- cliquer **Valider**
+- résultat :
+  - succès : message **"Vous êtes connecté"**
+  - échec : message **"Erreur. Recommence."**
+
+### 7.2 Reset
+Le bouton **Reset** vide les champs (fonction navigateur).
+
+### 7.3 Ajout de compte
+Cliquer **Ajout compte** :
+- redirige vers `add_account.php`
+- permet de créer un nouvel utilisateur
+- après création : retour vers la page de connexion
+
+### 7.4 Déconnexion
+Quand l’utilisateur est connecté :
+- bouton **Se déconnecter**
+- destruction de la session
 
 ---
 
-## 8. Dépannage
-### 8.1 Page Forbidden partout
-Vérifier :
-- `.htaccess` racine : headers seulement (ne pas mettre `Require all denied`)
-- `data/.htaccess` : `Require all denied`
+## 8) Explications techniques et sécurité
+### 8.1 Stockage des comptes (JSON)
+- Les utilisateurs sont stockés dans `data/users.json`
+- Les mots de passe ne sont **jamais** stockés en clair : uniquement un **hash**
 
-### 8.2 `.htaccess` ignoré
-Dans `httpd.conf` :
-- `AllowOverride All` sur `C:/xampp/htdocs`
+### 8.2 Hash de mot de passe
+- Création : `password_hash($password, PASSWORD_DEFAULT)`
+- Vérification : `password_verify($password, $hash)`
 
-### 8.3 Apache ne démarre pas
-Port déjà utilisé :
-- changer le port Apache (ex: 8080) puis ouvrir `http://localhost:8080/`
+Bénéfices :
+- hash + sel automatiques
+- difficulté accrue pour brute-force offline
+
+### 8.3 Protection CSRF
+- Un token CSRF est généré et stocké en session
+- Chaque formulaire POST inclut un champ caché `_csrf`
+- Si le token ne correspond pas : **403 (Requête invalide)**
+
+Objectif : empêcher les requêtes “forgées” depuis un autre site.
+
+### 8.4 Rate limiting (anti brute-force)
+- Les tentatives de login sont enregistrées par IP dans `data/attempts.json`
+- Règle : **10 tentatives / 5 minutes / IP**
+- Si dépassement : **429** “Trop de tentatives…”
+
+Objectif : ralentir les attaques par mot de passe.
+
+### 8.5 Sessions + cookies
+La session PHP stocke l’utilisateur connecté.  
+Les cookies de session sont durcis via :
+- `HttpOnly` (réduit le vol de cookie via JS en cas d’XSS)
+- `SameSite=Lax` (réduit les risques CSRF)
+- `Secure` activable si HTTPS (en production)
+
+### 8.6 Messages d’erreur génériques
+Le même message est renvoyé si :
+- utilisateur inexistant
+- mot de passe incorrect
+
+Objectif : éviter l’énumération d’utilisateurs (*user enumeration*).
 
 ---
 
-**Auteur :** Nabila ARAB
+## 9) Dépannage
+### 9.1 Page blanche / erreur
+- vérifier qu’Apache est “Running”
+- vérifier l’URL correcte
+- vérifier que les fichiers sont bien dans `C:\xampp\htdocs\secure-auth-php\`
+
+### 9.2 Port 80 occupé
+Si Apache ne démarre pas :
+- un autre logiciel peut utiliser le port 80/443
+- changer Apache en 8080 et retester
+
+---
+
+## 10) Publication sur GitHub (rendu)
+1. Créer un dépôt GitHub
+2. Ajouter les fichiers du projet
+3. Pousser (push)
+  
+
+---
+
+## 11) Améliorations possibles
+- Stockage persistant en **SQLite**
+- `session_regenerate_id(true)` après login (anti session fixation)
+- headers de sécurité via `.htaccess`
+- logs sécurité (audit des tentatives)
+- 2FA (TOTP) en extension
