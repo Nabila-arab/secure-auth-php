@@ -1,200 +1,165 @@
-# Formulaire d’authentification sécurisé (PHP + XAMPP)
+# TP1 — Formulaire d’authentification sécurisé (PHP / XAMPP) — OWASP A1, A2, A7
 
-## 1) Objectif (selon l’énoncé)
-Réaliser un formulaire d’identification sécurisé comprenant :
-- 1 **logo**
-- 1 champ **Identifiant**
-- 1 champ **Mot de passe**
-- **3 boutons** :
+## 1) Objectif (énoncé)
+Réaliser un formulaire d’identification sécurisé contenant :
+- un logo
+- un champ **identifiant**
+- un champ **mot de passe**
+- 3 boutons :
   - **Reset** : remise à zéro des champs
-  - **Valider (OK)** : affiche un message de succès ou d’erreur
-  - **Ajout compte** : permet d’ajouter un identifiant supplémentaire
-- Aucune contrainte de langage/framework/BD
-- Le projet doit être publié sur une plateforme (GitHub / GitLab / Framagit)
-- Le fichier `README.md` doit expliquer :
-  - les informations techniques
+  - **Valider** : affiche un message de succès ou d’erreur
+  - **Ajout compte** : permet d’ajouter un identifiant (créer un compte)
+- un **README** détaillant :
+  - informations techniques
   - comment utiliser
-  - identifiant/mot de passe si nécessaire
+  - identifiant / mot de passe si nécessaire
 
 ---
 
 ## 2) Choix techniques
-Ce projet est réalisé en **PHP** (solution simple et rapide avec XAMPP) et respecte des principes de sécurité de base :
-
-- **PHP + Apache** via XAMPP
-- Interface : HTML/CSS
-- Stockage des comptes : **fichier JSON** (`data/users.json`)  
-  (persistance simple sans base SQL/NoSQL)
-- Sécurité :
-  - mots de passe **hachés** (`password_hash`) + vérification (`password_verify`)
-  - protection **CSRF** (token en session)
-  - **rate limiting** basique (anti brute-force) via `data/attempts.json`
-  - session PHP + cookies durcis (HttpOnly, SameSite)
+- **Langage** : PHP (déploiement simple avec XAMPP)
+- **Serveur** : Apache (XAMPP)
+- **Stockage** : SQLite (`data/app.db`) via **PDO**
+- **Front** : HTML/CSS + JavaScript (icône “œil” pour afficher/masquer le mot de passe)
+- **Objectif sécurité (OWASP Top 10)** :
+  - **A1 — Injection**
+  - **A2 — Broken Authentication**
+  - **A7 — XSS**
 
 ---
 
-## 3) Prérequis (outils à installer)
-### 3.1 XAMPP (Apache + PHP)
-Télécharger : https://www.apachefriends.org/fr/index.html
+## 3) Prérequis / Outils
+### 3.1 Installer XAMPP
+- https://www.apachefriends.org/fr/index.html
 
-Après installation, XAMPP est généralement dans :
-- `C:\xampp\`
+### 3.2 (Recommandé) Éditeur
+- VS Code : https://code.visualstudio.com/
 
-### 3.2 (Recommandé) Éditeur de code
-Visual Studio Code : https://code.visualstudio.com/
-
-### 3.3 Git pour publier sur GitHub
-Git : https://git-scm.com/downloads  
-GitHub Desktop : https://desktop.github.com/
+### 3.3 (Optionnel) Git
+- Git : https://git-scm.com/downloads
 
 ---
 
-## 4) Installation / Création du projet (pas à pas)
-### 4.1 Démarrer Apache
-1. Ouvrir **XAMPP Control Panel**
-2. Cliquer sur **Start** pour **Apache**
-3. Vérifier dans un navigateur :
-   - http://localhost/
-
-Si Apache ne démarre pas, le problème le plus fréquent est un port déjà utilisé (80/443).  
-Dans ce cas, changer le port dans la configuration Apache (ex. 8080) puis redémarrer.
-
-### 4.2 Créer le dossier du projet
-Créer le dossier dans `htdocs` (racine web d’Apache) :
-
+## 4) Installation du projet (Windows + XAMPP)
+### 4.1 Placement dans `htdocs`
+Copier le dossier du projet dans :
 - `C:\xampp\htdocs\secure-auth-php\`
 
-### 4.3 Arborescence du projet
-Le projet contient :
+Fichiers principaux :
+- `index.php` : page de connexion
+- `add_account.php` : création de compte
+- `logout.php` : déconnexion
+- `lib/security.php` : session sécurisée, CSRF, rate limiting, lockout, logs, échappement XSS
+- `lib/db.php` : SQLite + requêtes préparées (PDO)
+- `assets/style.css` : styles
+- `assets/app.js` : bouton “œil”
+- `data/attempts.json` et `data/locks.json` : compteurs de sécurité (anti brute-force)
 
-```text
-secure-auth-php/
-  index.php            # Login (formulaire + traitement)
-  add_account.php      # Ajout compte (formulaire + traitement)
-  logout.php           # Déconnexion
-  lib/
-    security.php       # Session, CSRF, rate limit
-    storage.php        # Lecture/écriture JSON
-  data/
-    users.json         # Comptes (hash)
-    attempts.json      # Tentatives (anti brute-force)
-  assets/
-    style.css          # Style
-  README.md
-```
+> La base SQLite `data/app.db` est créée automatiquement au premier lancement (table `users`).
 
----
+### 4.2 Démarrer Apache
+1. Ouvrir **XAMPP Control Panel**
+2. Cliquer **Start** sur **Apache**
+3. Vérifier que `http://localhost/` fonctionne
 
-## 5) Lancer le projet
-### 5.1 URL du projet
-Si Apache écoute sur le port 80 (par défaut) :
+### 4.3 Lancer l’application
 - http://localhost/secure-auth-php/index.php
 
-Si Apache a été déplacé en 8080 :
-- http://localhost:8080/secure-auth-php/index.php
+---
+
+## 5) Utilisation
+### 5.1 Connexion
+- Saisir identifiant + mot de passe
+- Cliquer **Valider**
+  - succès : message **« Vous êtes connecté »**
+  - échec : message **« Erreur. Recommence. »** (message générique)
+
+### 5.2 Reset
+- **Reset** vide les champs (fonction du navigateur).
+
+### 5.3 Ajout d’un compte
+- Cliquer **Ajout compte**
+- Créer un identifiant conforme (3–30 caractères : lettres/chiffres/._-)
+- Choisir un mot de passe fort (8–64, maj/min/chiffre/symbole)
+- Le compte est enregistré dans SQLite (`data/app.db`).
+
+### 5.4 Afficher/masquer le mot de passe
+- Cliquer sur l’icône “œil” dans le champ mot de passe (JS local `assets/app.js`).
+
+### 5.5 Déconnexion
+- Bouton **Se déconnecter** (requête POST + protection CSRF)
+- Destruction de session + suppression du cookie de session.
 
 ---
 
-## 6) Identifiants de test
-Pour tester la connexion :
-
-- **Identifiant :** `Nabila`  
-- **Mot de passe :** `Nabila2026!`
-
----
-
-## 7) Utilisation (fonctionnel)
-### 7.1 Connexion
-Sur la page `index.php` :
-- saisir identifiant + mot de passe
-- cliquer **Valider**
-- résultat :
-  - succès : message **"Vous êtes connecté"**
-  - échec : message **"Erreur. Recommence."**
-
-### 7.2 Reset
-Le bouton **Reset** vide les champs (fonction navigateur).
-
-### 7.3 Ajout de compte
-Cliquer **Ajout compte** :
-- redirige vers `add_account.php`
-- permet de créer un nouvel utilisateur
-- après création : retour vers la page de connexion
-
-### 7.4 Déconnexion
-Quand l’utilisateur est connecté :
-- bouton **Se déconnecter**
-- destruction de la session
+## 6) Compte de test (pour correction)
+Pour tester rapidement :
+1. Aller sur **Ajout compte**
+2. Créer l’utilisateur :
+   - Identifiant : `Nabila`
+   - Mot de passe : `Nabila2026!`
+3. Revenir sur la page de connexion et se connecter avec ces identifiants.
 
 ---
 
-## 8) Explications techniques et sécurité
-### 8.1 Stockage des comptes (JSON)
-- Les utilisateurs sont stockés dans `data/users.json`
-- Les mots de passe ne sont **jamais** stockés en clair : uniquement un **hash**
+## 7) Détails sécurité — OWASP Top 10
 
-### 8.2 Hash de mot de passe
-- Création : `password_hash($password, PASSWORD_DEFAULT)`
-- Vérification : `password_verify($password, $hash)`
+### A1 — Injection (corrigé)
+Objectif : empêcher les injections (ex. SQL Injection).
 
-Bénéfices :
-- hash + sel automatiques
-- difficulté accrue pour brute-force offline
+Mesures :
+- SQLite via **PDO**
+- **Requêtes préparées** (pas de concaténation SQL) :
+  - `SELECT ... WHERE username = :u`
+  - `INSERT ... VALUES (:u, :p, :c)`
+- Validation stricte côté serveur :
+  - identifiant : `^[a-zA-Z0-9._-]{3,30}$`
+  - taille max côté serveur (mot de passe)
 
-### 8.3 Protection CSRF
-- Un token CSRF est généré et stocké en session
-- Chaque formulaire POST inclut un champ caché `_csrf`
-- Si le token ne correspond pas : **403 (Requête invalide)**
+Test conseillé :
+- tenter un identifiant : `nabila' OR 1=1 --` → refus ou message générique, pas de comportement anormal.
 
-Objectif : empêcher les requêtes “forgées” depuis un autre site.
+### A2 — Broken Authentication (corrigé)
+Objectif : éviter les failles d’authentification et de gestion de session.
 
-### 8.4 Rate limiting (anti brute-force)
-- Les tentatives de login sont enregistrées par IP dans `data/attempts.json`
-- Règle : **10 tentatives / 5 minutes / IP**
-- Si dépassement : **429** “Trop de tentatives…”
+Mesures :
+- Mots de passe stockés en **hash** :
+  - `password_hash()` / `password_verify()`
+- Protection contre session fixation :
+  - `session_regenerate_id(true)` après connexion réussie
+- Cookies de session durcis :
+  - `HttpOnly`, `SameSite=Lax` (et `Secure` si HTTPS)
+- Anti brute-force :
+  - rate limiting par IP (10 tentatives / 5 minutes) via `data/attempts.json`
+  - lockout par compte après 5 échecs (blocage 10 minutes) via `data/locks.json`
+- Message d’erreur générique (réduit l’énumération d’utilisateurs)
 
-Objectif : ralentir les attaques par mot de passe.
+### A7 — XSS (corrigé)
+Objectif : empêcher l’exécution de code JavaScript injecté.
 
-### 8.5 Sessions + cookies
-La session PHP stocke l’utilisateur connecté.  
-Les cookies de session sont durcis via :
-- `HttpOnly` (réduit le vol de cookie via JS en cas d’XSS)
-- `SameSite=Lax` (réduit les risques CSRF)
-- `Secure` activable si HTTPS (en production)
+Mesures :
+- Échappement systématique des sorties avec `e()` (wrapper de `htmlspecialchars`)
+- Headers de sécurité + CSP via `.htaccess` :
+  - `Content-Security-Policy`
+  - `X-Frame-Options: DENY`
+  - `X-Content-Type-Options: nosniff`
+- Filtrage des identifiants (regex)
 
-### 8.6 Messages d’erreur génériques
-Le même message est renvoyé si :
-- utilisateur inexistant
-- mot de passe incorrect
+Test conseillé :
+- tenter username `<script>alert(1)</script>` → refusé ou affiché échappé, jamais exécuté.
 
-Objectif : éviter l’énumération d’utilisateurs (*user enumeration*).
-
----
-
-## 9) Dépannage
-### 9.1 Page blanche / erreur
-- vérifier qu’Apache est “Running”
-- vérifier l’URL correcte
-- vérifier que les fichiers sont bien dans `C:\xampp\htdocs\secure-auth-php\`
-
-### 9.2 Port 80 occupé
-Si Apache ne démarre pas :
-- un autre logiciel peut utiliser le port 80/443
-- changer Apache en 8080 et retester
+**Vérification des headers (preuve A7)** :
+1. Ouvrir la page `index.php`
+2. F12 → onglet **Network** → cliquer la requête `index.php`
+3. Vérifier dans **Response Headers** la présence des headers ci-dessus.
 
 ---
 
-## 10) Publication sur GitHub (rendu)
-1. Créer un dépôt GitHub
-2. Ajouter les fichiers du projet
-3. Pousser (push)
-  
+> `data/app.db` est un fichier généré localement
 
 ---
 
-## 11) Améliorations possibles
-- Stockage persistant en **SQLite**
-- `session_regenerate_id(true)` après login (anti session fixation)
-- headers de sécurité via `.htaccess`
-- logs sécurité (audit des tentatives)
-- 2FA (TOTP) en extension
+## 8) Dépannage
+- **Apache ne démarre pas** : port 80 occupé → changer le port Apache (ex. 8080) puis utiliser `http://localhost:8080/...`
+- **`.htaccess` n’a pas d’effet** : activer `AllowOverride All` dans Apache, puis redémarrer Apache
+- **SQLite “driver” manquant** : activer `pdo_sqlite` et `sqlite3` dans `php.ini`, puis redémarrer Apache

@@ -1,0 +1,9 @@
+# SQLite database (recreated locally)
+data/app.db
+
+# Logs
+data/*.log
+
+# Runtime counters (optional to keep tracked; if you keep them tracked, keep them as {})
+# data/attempts.json
+# data/locks.json
